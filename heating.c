@@ -7,13 +7,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #define MAX_TIMINGS	85
 #define DHT_PIN		3	/* GPIO-22 */
 
 int data[5] = { 0, 0, 0, 0, 0 };
 
-void read_dht_data()
+bool read_dht_data(float *hum, float *temp)
 {
 	uint8_t laststate	= HIGH;
 	uint8_t counter		= 0;
@@ -80,10 +81,11 @@ void read_dht_data()
 			c = -c;
 		}
 		
-		printf( "Humidity = %.1f %% Temperature = %.1f *C )\n", h, c );
-	}else  {
-		printf( "Data not good, skip\n" );
+		*hum=h;
+		*temp=c;
+		return true;
 	}
+	return false;
 }
 
 int main( void )
@@ -95,8 +97,16 @@ int main( void )
 
 	while ( 1 )
 	{
-		read_dht_data();
-		delay( 4000 ); /* wait 2 seconds before next read */
+		float h,c;
+		if (read_dht_data(&h,&c) == true)
+		{
+			printf( "Humidity = %.1f %% Temperature = %.1f *C )\n", h, c );
+			delay(2000);
+		}
+		else
+		{
+			delay(50);
+		}
 	}
 
 	return(0);
